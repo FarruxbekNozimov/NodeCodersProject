@@ -13,11 +13,11 @@ bot.on("message", (ctx) => {
 	let text = ctx.update.message.text;
 	if (text == "Ro'yxatdan o'tish") {
 		ctx.sendMessage(
-			"Ro'yxatdan o'tish uchun variantlarni tanlang👌",
+			"Ro'yxatdan o'tish uchun variantlarni tanlang 👌",
 			Markup.keyboard([["Usta", "Mijoz"]]).resize()
 		);
 	}
-    console.log("Hi Farrux");
+	console.log("Hi Farrux");
 });
 
 bot.launch();
