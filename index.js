@@ -13,7 +13,7 @@ bot.on("message", (ctx) => {
 	let text = ctx.update.message.text;
 	if (text == "Ro'yxatdan o'tish") {
 		ctx.sendMessage(
-			"OzodJS = bot",
+			"Ro'yxatdan o'tish uchun variantlarni tanlang👌",
 			Markup.keyboard([["Usta", "Mijoz"]]).resize()
 		);
 	}
