@@ -3,7 +3,7 @@ const { Telegraf, Markup } = require("telegraf");
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 bot.start((ctx) => {
-	console.log("salom");
+	console.log("hayr");
 });
 
 bot.launch();
