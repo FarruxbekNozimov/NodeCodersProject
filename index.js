@@ -17,6 +17,7 @@ bot.on("message", (ctx) => {
 			Markup.keyboard([["Usta", "Mijoz"]]).resize()
 		);
 	}
+    console.log("Hi Farrux");
 });
 
 bot.launch();
