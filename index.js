@@ -20,6 +20,13 @@ bot.start(
 )
 
 
+bot.on("location", (ctx) => {
+
+    console.log(ctx.update.message.location);
+
+})
+
+
 bot.on("callback_query", (ctx) => {
 
 
