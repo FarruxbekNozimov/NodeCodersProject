@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 
-const UserSchema = new mongoose.Schema(
+const UstaSchema = new mongoose.Schema(
 	{
+		chatId: { type: String, required: true },
 		name: { type: String, required: true },
 		phone: { type: String, required: true },
 		kasb: { type: String, required: true },
@@ -16,4 +17,4 @@ const UserSchema = new mongoose.Schema(
 	{ timestamps: true }
 );
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("Usta", UstaSchema);

@@ -1,8 +1,7 @@
-require("dotenv").config();
 const { Telegraf, Markup } = require("telegraf");
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-let user = {
+let userOne = {
 	name: "",
 	phone: "",
 	kasb: "",
@@ -35,12 +34,10 @@ bot.hears("👉 Ro'yxatdan o'tish", (ctx) => {
 		"⭐️ Ro'yxatdan o'tish uchun variantlardan birini tanlang 👌",
 		Markup.keyboard([["Usta", "Mijoz"]]).resize()
 	);
-	console.log(user);
 });
 
 bot.hears("Usta", async (ctx) => {
 	try {
-		console.log(ctx.update.message.text);
 		if (ctx.update.message.text == "🔙 Ortga") {
 			ctx.replyWithHTML(
 				"👋 <b>Assalomu alaykum XUSH KELIBSIZ</b>\n\n<i>🏆 Botdan foydalanish uchun avval ro'yxatdan o'ting !!!</i>",
@@ -48,18 +45,10 @@ bot.hears("Usta", async (ctx) => {
 			);
 		}
 		let btns = kasblar.map((k) => [k]);
-		// ctx.replyWithHTML(
-		// 	"<i><b>Hey Usta</b>, o'zingizni yo'nalishingizni tanlang.</i> 👇",
-		// 	Markup.keyboard([...btns, ["🔙 Ortga"]]).resize()
-		// );
-		await ctx.reply("Enter your email");
-		ctx.then(
-			ctx.reply("i will call you " + ctx.update.message.text + " from now on")
+		ctx.replyWithHTML(
+			"<i><b>Hurmatli Usta</b>, o'zingizni yo'nalishingizni tanlang.</i> 👇",
+			Markup.keyboard([...btns, ["🔙 Ortga"]]).resize()
 		);
-		// email = ctx.update.message?.text;
-
-		// await ctx.reply("Enter your password");
-		// password = ctx.update.message?.text;
 
 		bot.on("contact", (ctx) => {
 			let {
@@ -68,7 +57,7 @@ bot.hears("Usta", async (ctx) => {
 				last_name,
 			} = ctx.update.message.contact;
 			let name = (first_name + " " + last_name).trim();
-			user = { name, phone, ...user };
+			userOne = { ...userOne, name, phone };
 			ctx.replyWithHTML(
 				`<b>${name}</b> joylashuvingizni  ulashing 📍`,
 				Markup.keyboard([
@@ -76,37 +65,29 @@ bot.hears("Usta", async (ctx) => {
 					["🔙 Ortga"],
 				]).resize()
 			);
-			console.log(user);
 		});
 
 		bot.on("location", async (ctx) => {
 			let { latitude, longitude } = ctx.update.message.location;
-			user = { ...user, manzil: [latitude, longitude] };
-			// ctx.replyWithHTML(
-			// 	"Ustaxona nomini kiriting",
-			// 	Markup.inlineKeyboard([
-			// 		Markup.button.callback("Keyingisi >>", "skip"),
-			// 	]).resize()
-			// );
-			console.log(ctx.update);
-			bot.on("text", (msg) => {
-				console.log(msg);
-				let ustaxonaNomi = msg.message.text;
-				console.log(ustaxonaNomi);
-				user = { ...user, ustaxonaNomi };
-				console.log(user);
-				ctx.reply(
-					"Ustaxona mo'ljalini kiriting",
-					Markup.inlineKeyboard([
-						Markup.button.callback("Keyingisi >>", "skip"),
-					]).resize()
-				);
-				console.log("salom");
-			});
-		});
-
-		bot.on("callback_query", async (ctx) => {
-			ctx.reply(`Your answer was: ${ctx.update.callback_query.data}`);
+			userOne = { ...userOne, lokatsiya: [latitude, longitude] };
+			ctx.replyWithHTML(
+				"Ustaxona nomini kiriting",
+				Markup.inlineKeyboard([
+					Markup.button.callback("Keyingisi >>", "skip"),
+				]).resize()
+			);
+			if (!userOne["moljal"]) {
+				bot.on("message", (msg) => {
+					let ustaxonaNomi = msg.message.text;
+					userOne = { ...userOne, ustaxonaNomi };
+					ctx.reply(
+						"Ustaxona mo'ljalini kiriting",
+						Markup.inlineKeyboard([
+							Markup.button.callback("Skip >>", "skip"),
+						]).resize()
+					);
+				});
+			}
 		});
 
 		bot.action("skip", (ctx) => {
@@ -118,7 +99,7 @@ bot.hears("Usta", async (ctx) => {
 			);
 		});
 
-		bot.on("message", (msg) => {
+		bot.on("text", (msg) => {
 			let kasb = msg.message.text;
 			if (kasb == "🔙 Ortga") {
 				ctx.replyWithHTML(
@@ -126,6 +107,7 @@ bot.hears("Usta", async (ctx) => {
 					Markup.keyboard([["👉 Ro'yxatdan o'tish"]]).resize()
 				);
 			} else if (kasblar.includes(kasb)) {
+				userOne = { ...userOne, kasb };
 				ctx.sendMessage(
 					"🥺 Iltimos, contactingizni biz bilan ulashing 🙏",
 					Markup.keyboard([
@@ -133,11 +115,44 @@ bot.hears("Usta", async (ctx) => {
 						["🔙 Ortga"],
 					]).resize()
 				);
+			} else if (!userOne["ustaxonaNomi"]) {
+				let ustaxonaNomi = msg.message.text;
+				userOne = { ...userOne, ustaxonaNomi };
+				ctx.reply(
+					"🏘 Ustaxona mo'ljalini kiriting : ",
+					Markup.inlineKeyboard([
+						Markup.button.callback("Skip >>", "skip"),
+					]).resize()
+				);
+			} else if (!userOne["moljal"]) {
+				let moljal = msg.message.text;
+				userOne = { ...userOne, moljal };
+				ctx.reply("⏰ Ishingizni boshlash vaqti (e.g 8:30) : ");
+			} else if (!userOne["boshlanishi"]) {
+				let boshlanishi = msg.message.text;
+				let [hour, min] = boshlanishi.split(":");
+				if (hour && min && hour < 24 && min < 60) {
+					userOne = { ...userOne, boshlanishi };
+					ctx.reply("🕰 Ishingizni tugash vaqti : ");
+				} else {
+					ctx.replyWithHTML(
+						"<i>Vaqtni to'g'ri yozishda adashdingiz kiritmadingiz</i> 😊\n\n⏰ Ishni boshlash vaqtingiz (e.g 8:30) : "
+					);
+				}
+			} else if (!userOne["mijozVaqti"]) {
+				let mijozVaqti = msg.message.text.trim();
+				if (mijozVaqti > 0 && mijozVaqti < 60) {
+					userOne = { ...userOne, mijozVaqti };
+					ctx.replyWithHTML("");
+				} else {
+					ctx.replyWithHTML(
+						"<i>Vaqtni to'g'ri yozishda adashdingiz kiritmadingiz</i> 😊\n\n⏰ Ishni boshlash vaqtingiz (e.g 8:30) : "
+					);
+				}
 			}
-			user = { ...user, kasb };
 		});
-		console.log(user);
 	} catch (error) {
+		console.log(error);
 		ctx.sendMessage("XATOLIK ❌❌❌");
 	}
 });
