@@ -49,7 +49,8 @@ bot.hears("Usta", async (ctx) => {
 				Markup.keyboard([["👉 Ro'yxatdan o'tish"]]).resize()
 			);
 		}
-		let btns = kasblar.map((k) => [k]);
+		let kasbs = await Kasb.find();
+		let btns = kasbs.map((k) => [k.name]);
 		ctx.replyWithHTML(
 			"<i><b>Hurmatli Usta</b>, o'zingizni yo'nalishingizni tanlang.</i> 👇",
 			Markup.keyboard([...btns, ["🔙 Ortga"]]).resize()
