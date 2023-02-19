@@ -1,5 +1,4 @@
-const { Telegraf, Markup } = require("telegraf");
-const bot = new Telegraf(process.env.BOT_TOKEN);
+const { bot } = require("./index");
 
 bot.hears("Mijoz", (ctx) => {
 	// actions on mijoz command

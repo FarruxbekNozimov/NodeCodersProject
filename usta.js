@@ -1,5 +1,10 @@
+const Kasb = require("./models/Kasb");
+const User = require("./models/User");
 const { Telegraf, Markup } = require("telegraf");
+const mongoose = require("mongoose");
 const bot = new Telegraf(process.env.BOT_TOKEN);
+
+let services;
 
 let userOne = {
 	name: "",
@@ -155,6 +160,157 @@ bot.hears("Usta", async (ctx) => {
 		console.log(error);
 		ctx.sendMessage("XATOLIK ❌❌❌");
 	}
+});
+
+bot.hears("Mijoz", (ctx) => {
+	// actions on mijoz command
+	ctx.sendMessage(
+		`Iltimos kontaktingizni ulashing! 🙂\nIsmingizni o'zgartirish uchun qayta hozir qayta ismingizni yozishingiz mumkin.`,
+		Markup.keyboard([Markup.button.contactRequest("Kontakt ulashish")]).resize()
+	);
+	bot.on("contact", async (ctx) => {
+		// actions on contact input
+		let phoneNumber = ctx.update.message.contact;
+		user.phone = phoneNumber.phone_number;
+
+		ctx.replyWithHTML(
+			"Mijoz sifatida ro'yxatdan o'tish uchun ismingizni kiriting\n<i>Namuna:</i> Ozodbek\n\n<i>Sizga 'usta'lar qanday murojaat qilishlarini istaysiz?</i>",
+			Markup.keyboard([["🔙 Orqaga"]]).resize()
+		);
+
+		console.log(user);
+		bot.hears("Xizmatlar", (ctx) => {
+			// actions on Xizmatlar command
+			ctx.replyWithHTML(
+				`<b>Xizmatlardan birini o'z ehtiyojingizga qarab tanlang!</b>`,
+				Markup.keyboard(services).resize()
+			);
+
+			bot.on("message", (ctx) => {
+				// actions on on One of the Xizmatlar command
+				let text = ctx.update.message.text;
+				for (let i = 0; i < services.length; i++) {
+					if (services[i] === text) {
+						Markup.keyboard([["Ismi"], ["Reyting"], ["Lokatsiya"]]);
+					}
+				}
+			});
+			bot.on("message", async (ctx) => {
+				// actions on mijoz's name input
+				let mijozName = ctx.message.text;
+				user.name = mijozName;
+				await User.create({
+					chatId: ctx.update.message.chat.id,
+					...user,
+				});
+
+				ctx.sendMessage(
+					"Endi botdan mijoz sifatida to'liq foydalanishingiz mumkin. 😃",
+					Markup.keyboard([
+						["Xizmatlar", "Tanlangan Xizmatlar"],
+						["Ma'lumotlarni o'zgartirish"],
+					]).resize()
+				);
+			});
+		});
+
+		// bot.hears("Boshqa", (ctx) => {
+		//     // actions on Boshqa command
+		// });
+	});
+
+	// bot.hears(); orqaga
+});
+
+bot.command("admin", async (ctx) => {
+	menu = 1;
+	userChatId = ctx.update.message.chat.id;
+	let admin = await User.findOne({ chatId: userChatId });
+	if (!admin) {
+		return ctx.reply("Siz admin emassiz");
+	}
+	if (admin.chatId == userChatId && admin.role == "admin") {
+		ctx.replyWithHTML(
+			`<b>O‘zingizga zarur bandni tanlang</b>`,
+			Markup.keyboard([["Xizmatlar", "Ustalar", "Mijozlar"]]).resize()
+		);
+	} else {
+		ctx.reply("Siz admi/n emassiz");
+	}
+});
+bot.hears("/admin", async (ctx) => {
+	if (action == "Back to Menu") {
+		action = "";
+		ctx.replyWithHTML(
+			"<b>Zarur xizmat turini tanlang</b>",
+			Markup.keyboard([
+				["➕ Boshqa xizmat qo'shish"],
+				...services.map((s) => [s.name]),
+				["🔙 Ortga"],
+			]).resize()
+		);
+	}
+
+	bot.command("quit", async (ctx) => {
+		await ctx.telegram.leaveChat(ctx.message.chat.id);
+
+		await ctx.leaveChat();
+	});
+
+	bot.hears("Xizmatlar", async (ctx) => {
+		menu = 2;
+		services = await Kasb.find();
+		console.log(services);
+		ctx.replyWithHTML(
+			"<b>Zarur xizmat turini tanlang</b>",
+			Markup.keyboard([
+				["➕ Boshqa xizmat qo'shish"],
+				...services.map((s) => [s.name]),
+				["🔙 Ortga"],
+			]).resize()
+		);
+		return;
+	});
+
+	bot.hears("➕ Boshqa xizmat qo'shish", (ctx) => {
+		menu = 3;
+		ctx.replyWithHTML(
+			"<b>Qo'shmoqchi bo'lgan xizmat nomini kiriting...</b>",
+			Markup.keyboard([["🔙 Ortga"]]).resize()
+		);
+		bot.on("message", async (ctx) => {
+			let text = ctx.message.text;
+			await Kasb.create({ name: text });
+			ctx.replyWithHTML(
+				"<b>Zarur xizmat turini tanlang</b>",
+				Markup.keyboard([
+					["➕ Boshqa xizmat qo'shish"],
+					...services.map((s) => [s.name]),
+					["🔙 Ortga"],
+				]).resize()
+			);
+			action = "Back to Menu";
+			return console.log("Created");
+		});
+	});
+
+	bot.hears("Tahrirlash", (ctx) => {
+		action = "editing";
+		ctx.replyWithHTML("<b>🙏🏻Iltimos, yangi nomni kiriting✏️</b>");
+	});
+
+	bot.hears("Ustalar", (ctx) => {
+		ctx.reply("Ustalar");
+	});
+
+	bot.hears("Mijozlar", async (ctx) => {
+		clients = await User.find();
+		console.log(clients);
+		ctx.replyWithHTML(
+			"<b>Zarur xizmat turini tanlang</b>",
+			Markup.keyboard([...clients.map((s) => [s.name]), ["🔙 Ortga"]]).resize()
+		);
+	});
 });
 
 bot.launch();

@@ -1,6 +1,4 @@
-require("dotenv").config();
-const { Telegraf, Markup } = require("telegraf");
-const bot = new Telegraf(process.env.BOT_TOKEN);
+const { bot } = require("./index");
 const Kasb = require("./models/Kasb");
 const User = require("./models/User");
 
@@ -95,8 +93,5 @@ bot.hears("/admin", async (ctx) => {
 		);
 	});
 });
-bot.launch();
 
-// Enable graceful stop
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
+bot.launch();
